@@ -145,3 +145,11 @@ npm run ios        # build and run on a connected device
 CI (`.github/workflows/ios.yml`) runs the bundle on Linux, then does an unsigned
 device archive on macOS and uploads the `.ipa`. It has no Apple credentials and
 does not need any.
+
+## License
+
+Copyright 2026 Paweł Pająk. Licensed under the **Apache License 2.0** — see
+[LICENSE](LICENSE).
+
+This app contains no Tyra or TyraX code; it only speaks the protocol in
+[PROTOCOL.md](PROTOCOL.md).
