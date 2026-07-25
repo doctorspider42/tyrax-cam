@@ -10,7 +10,8 @@
     "prebuild": "expo prebuild -p ios",
     "ios": "expo run:ios --device",
     "ios:release": "expo run:ios --device --configuration Release",
-    "bundle": "expo export --platform ios --output-dir dist"
+    "bundle": "expo export --platform ios --output-dir dist",
+    "icon": "node scripts/make-icon.mjs"
   },
   "dependencies": {
     "@react-native-async-storage/async-storage": "2.1.0",

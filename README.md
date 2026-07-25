@@ -52,20 +52,56 @@ a different client (or a different server) without reading this app's source.
 The app is **sideload-only** — it is a tool for one workflow, not something for
 the App Store. Three routes, in rising order of effort:
 
-### 1. Grab the CI build and sign it yourself (no Mac needed)
+### 1. AltStore, with this repo as a source (recommended — no Mac needed)
 
-Every push builds an **unsigned `.ipa`** and attaches it to the workflow run:
-open the [Actions tab](https://github.com/doctorspider42/tyrax-cam/actions),
-pick the latest green *iOS build*, and download the `TyraXCam-unsigned-ipa`
-artifact.
+Set up once on a PC, then every later version installs **from the phone**.
 
-Then sign and install it with a **free Apple ID** using
-[Sideloadly](https://sideloadly.io) (Windows/macOS) or
-[AltStore](https://altstore.io). Both re-sign the `.ipa` with your own account
-and push it to the device over USB.
+**On the PC (once):**
 
-A free account's signature lasts **7 days** — the tool refreshes it. A paid
-developer account ($99/yr) makes it a year.
+1. Install [iTunes](https://www.apple.com/itunes/download/win64) **and**
+   [iCloud for Windows](https://support.apple.com/en-us/HT204283) — both from
+   Apple's own site, *not* the Microsoft Store versions. AltServer needs the
+   device-support libraries those ship, and the Store builds are sandboxed away
+   from it.
+2. Install **AltServer** from [altstore.io](https://altstore.io).
+3. Plug the phone in over USB and tap **Trust** on it.
+4. AltServer tray icon → **Install AltStore** → your device. It asks for your
+   Apple ID; with 2FA on, generate an
+   [app-specific password](https://support.apple.com/en-us/HT204397) and use that.
+5. On the phone: *Settings → General → VPN & Device Management → Developer App →
+   Trust*.
+
+**On the phone (once):**
+
+6. Open AltStore → **Browse** → **Sources** → **+** and add:
+
+   ```
+   https://raw.githubusercontent.com/doctorspider42/tyrax-cam/main/altstore.json
+   ```
+
+7. *TyraX Cam* now appears under that source — tap **Install** (AltStore signs it
+   with your Apple ID as it installs; the `.ipa` here is deliberately unsigned).
+
+**From then on:** new releases show up in AltStore's *My Apps → Updates* on their
+own. AltServer must be running on the PC and on the same Wi-Fi for AltStore to
+refresh the signature.
+
+Free-Apple-ID limits, which are Apple's and not this app's: **3 sideloaded apps**
+at a time, and signatures expire after **7 days** (AltStore re-signs
+automatically while AltServer is reachable — leave it running, or open AltStore
+once a week). A paid developer account ($99/yr) raises that to a year.
+
+Nothing in this app needs a paid account: no push notifications, no app groups,
+no associated domains. ARKit and local networking both work on a free signature.
+
+### 1b. Sideloadly (simpler for a one-off)
+
+If you just want it on the phone once and do not care about automatic updates:
+download `TyraXCam.ipa` from the
+[latest release](https://github.com/doctorspider42/tyrax-cam/releases/latest),
+then use [Sideloadly](https://sideloadly.io) — pick the `.ipa`, enter your Apple
+ID, Start. Same 7-day expiry, but no AltStore app on the device and no source to
+add. You re-run Sideloadly by hand for each update.
 
 ### 2. Build from source in Xcode (needs a Mac)
 
@@ -138,13 +174,47 @@ screen. Use a native build (any route above).
 ```bash
 npm install
 npm run bundle     # what CI's fast job does: Metro-bundle for iOS
-npm run prebuild   # generate ios/
+npm run prebuild   # generate ios/  (macOS/Linux only - not Windows)
 npm run ios        # build and run on a connected device
+npm run icon       # redraw assets/icon.png
 ```
 
-CI (`.github/workflows/ios.yml`) runs the bundle on Linux, then does an unsigned
-device archive on macOS and uploads the `.ipa`. It has no Apple credentials and
-does not need any.
+### Releasing
+
+Tag it — everything else is automatic:
+
+```bash
+git tag v1.0.1 && git push --tags
+```
+
+`.github/workflows/ios.yml` then builds the unsigned `.ipa`, publishes a GitHub
+Release with it as `TyraXCam.ipa`, and `altstore-source.yml` regenerates
+`altstore.json` so phones with the source added see the update. The version
+AltStore compares is the tag without its leading `v`, so keep it in step with
+`app.json`'s `version`.
+
+The `.ipa` download URL is the `/releases/latest/download/` permalink, so a stale
+manifest can only ever advertise an old *version number* — never a dead link.
+
+### CI
+
+- **JS bundle** (Linux, ~1 min): `npm ci`, Metro-bundle for iOS, resolve the Expo
+  config, and assert the local ARKit module is autolinked. That last one matters:
+  if autolinking drops the module the app still builds and still runs, it just
+  silently cannot move the camera.
+- **Unsigned iOS build** (macOS, ~9 min): `expo prebuild`, then an unsigned
+  device archive packaged into an `.ipa`. No Apple credentials, and none needed.
+
+Docs-only commits are skipped (`paths-ignore`) so they do not spend a macOS
+runner.
+
+### Known gaps
+
+- `assets/icon.png` is drawn by a script, not by a designer. Replace it with real
+  artwork whenever you like — nothing depends on the generator.
+- No splash screen, no app-store screenshots.
+- Android is untouched: the pose source is ARKit. ARCore would be a different
+  native module behind the same JS interface.
 
 ## License
 

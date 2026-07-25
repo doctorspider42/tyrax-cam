@@ -1,0 +1,47 @@
+{
+  "name": "TyraX Cam",
+  "identifier": "io.github.doctorspider42.tyraxcam.source",
+  "subtitle": "Phone camera for the TyraX PS2 editor",
+  "description": "Releases of TyraX Cam, the phone viewfinder for the TyraX editor.",
+  "website": "https://github.com/doctorspider42/tyrax-cam",
+  "apps": [
+    {
+      "name": "TyraX Cam",
+      "bundleIdentifier": "io.github.doctorspider42.tyraxcam",
+      "developerName": "doctorspider42",
+      "subtitle": "Live viewfinder + 6DoF camera control",
+      "localizedDescription": "Turn your iPhone into a live camera viewfinder for the TyraX PlayStation 2 editor.\n\nConnect over Wi-Fi and the phone shows a live picture of the editor viewport;\nmove the phone and that camera moves with it (6DoF ARKit tracking, so walking\nacross the room walks the camera across the map). Press Record and the move is\nwritten into the editor cutscene timeline as camera keyframes.\n\nNeeds the TyraX editor running on a PC on the same network.",
+      "iconURL": "https://raw.githubusercontent.com/doctorspider42/tyrax-cam/main/assets/icon.png",
+      "tintColor": "3B5C94",
+      "category": "developer",
+      "screenshotURLs": [],
+      "version": "1.0.0",
+      "versionDate": "2026-07-25",
+      "versionDescription": "Release 1.0.0. See the GitHub releases page for details.",
+      "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/latest/download/TyraXCam.ipa",
+      "size": 3881472,
+      "minOSVersion": "15.1",
+      "versions": [
+        {
+          "version": "1.0.0",
+          "date": "2026-07-25",
+          "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/latest/download/TyraXCam.ipa",
+          "size": 3881472,
+          "localizedDescription": "Release 1.0.0. See the GitHub releases page for details.",
+          "minOSVersion": "15.1"
+        }
+      ],
+      "permissions": [
+        {
+          "type": "camera",
+          "usageDescription": "ARKit needs the camera to work out how the phone moves. No image is recorded, shown or transmitted."
+        },
+        {
+          "type": "localnetwork",
+          "usageDescription": "To reach the TyraX editor running on your computer."
+        }
+      ]
+    }
+  ],
+  "news": []
+}

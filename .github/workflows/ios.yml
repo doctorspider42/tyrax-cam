@@ -12,8 +12,19 @@ name: iOS build
 on:
   push:
     branches: [main]
+    # A macOS runner costs ~9 minutes; a README or manifest edit cannot break the
+    # build, so do not spend one on it. (Path filters do not apply to tag pushes,
+    # which is what we want - a release must always build.)
+    paths-ignore: ['**.md', 'LICENSE', 'altstore.json']
+    tags: ['v*']
   pull_request:
+    paths-ignore: ['**.md', 'LICENSE', 'altstore.json']
   workflow_dispatch:
+
+# A tag build attaches the .ipa to a GitHub Release, which (unlike a workflow
+# artifact) needs no login to download - so the phone can fetch it directly.
+permissions:
+  contents: write
 
 concurrency:
   group: ios-${{ github.ref }}
@@ -157,3 +168,22 @@ jobs:
           path: ${{ env.ipa }}
           if-no-files-found: error
           retention-days: 30
+
+      # Tag build: publish the .ipa as a Release asset. A workflow artifact can
+      # only be downloaded by a logged-in user through the Actions UI, which a
+      # phone cannot practically do; a Release asset is a plain public URL, and
+      # /releases/latest/download/<name> is a permalink the AltStore source below
+      # can point at forever.
+      - name: Publish the Release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Fixed asset name: the AltStore manifest's downloadURL depends on it.
+          cp "$ipa" "$RUNNER_TEMP/TyraXCam.ipa"
+          gh release create "$GITHUB_REF_NAME" "$RUNNER_TEMP/TyraXCam.ipa" \
+            --title "TyraX Cam $GITHUB_REF_NAME" \
+            --notes "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from ${GITHUB_SHA:0:7}." \
+            --verify-tag || \
+          gh release upload "$GITHUB_REF_NAME" "$RUNNER_TEMP/TyraXCam.ipa" --clobber
