@@ -14,13 +14,21 @@
       "iconURL": "https://raw.githubusercontent.com/doctorspider42/tyrax-cam/main/assets/icon.png",
       "tintColor": "3B5C94",
       "screenshots": [],
-      "version": "1.0.3",
-      "versionDate": "2026-07-25T21:37:58Z",
-      "versionDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from c97ce7d.",
+      "version": "1.0.4",
+      "versionDate": "2026-07-25T23:12:54Z",
+      "versionDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from e6c0c74.",
       "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/latest/download/TyraXCam.ipa",
-      "size": 3949166,
+      "size": 3949428,
       "minOSVersion": "15.1",
       "versions": [
+        {
+          "version": "1.0.4",
+          "date": "2026-07-25T23:12:54Z",
+          "localizedDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from e6c0c74.",
+          "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/download/v1.0.4/TyraXCam.ipa",
+          "size": 3949428,
+          "minOSVersion": "15.1"
+        },
         {
           "version": "1.0.3",
           "date": "2026-07-25T21:37:58Z",
