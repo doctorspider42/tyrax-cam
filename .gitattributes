@@ -1,0 +1,6 @@
+# Everything in this repo is consumed on Linux and macOS (the CI runners, Xcode,
+# CocoaPods), so keep LF in the repository regardless of who commits from where.
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ipa binary

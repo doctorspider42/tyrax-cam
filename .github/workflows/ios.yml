@@ -1,0 +1,136 @@
+name: iOS build
+
+# Two jobs on purpose. `bundle` runs on Linux in about a minute and catches the
+# ordinary mistakes (a syntax error, a bad import, a missing dependency) without
+# waiting for a macOS runner. `ios` then does the real thing: generate the native
+# project and compile it, Swift ARKit module included.
+#
+# The build is UNSIGNED - there are no Apple credentials here, and this is a
+# sideload-only app. The artifact is an unsigned .ipa that Sideloadly / AltStore
+# can sign with a free Apple ID; see the README.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  bundle:
+    name: JS bundle
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      # Metro has to resolve and transform every module the app imports, so this
+      # fails on a syntax error, a bad import path or a dependency that is not
+      # actually declared - none of which needs a Mac to find.
+      - name: Bundle for iOS
+        run: npx expo export --platform ios --output-dir dist
+      - name: Check the Expo config resolves
+        run: npx expo config --type public > /dev/null
+
+      # The local ARKit module is what makes this app more than a picture viewer,
+      # and autolinking failing to pick it up is INVISIBLE: the app still builds
+      # and still runs, it just silently cannot move the camera. Assert it.
+      # (Note the platform is "apple", not "ios" - an `-p ios` query filters out
+      # every apple-only module, this one included.)
+      - name: Assert the ARKit module is autolinked
+        run: |
+          npx expo-modules-autolinking search -p apple --json > modules.json
+          node -e '
+            const m = require("./modules.json");
+            const name = "tyrax-arkit";
+            if (!m[name]) {
+              console.error("FAIL: " + name + " is not autolinked. Found: " + Object.keys(m).join(", "));
+              process.exit(1);
+            }
+            // --json flattens the config; the pretty printer wraps it in
+            // rawConfig. Accept either so a CLI change does not fake a pass.
+            const cfg = m[name].config ?? {};
+            const mods = (cfg.apple?.modules) ?? (cfg.rawConfig?.apple?.modules) ?? [];
+            if (!mods.includes("TyraxArkitModule")) {
+              console.error("FAIL: " + name + " links no TyraxArkitModule (got " + JSON.stringify(mods) + ")");
+              process.exit(1);
+            }
+            console.log("ok: " + name + " -> " + mods.join(", "));
+          '
+
+  ios:
+    name: Unsigned iOS build
+    runs-on: macos-15
+    needs: bundle
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      # Generates ios/ (never checked in) and runs pod install. This is also
+      # what validates app.json and the local module's expo-module.config.json:
+      # a bad key here fails now rather than in Xcode.
+      - name: Expo prebuild
+        run: npx expo prebuild --platform ios
+        env:
+          EXPO_NO_TELEMETRY: '1'
+
+      # The scheme name comes from app.json, so discover it instead of hardcoding
+      # it - renaming the app must not silently break CI.
+      - name: Find the Xcode workspace and scheme
+        id: xc
+        run: |
+          set -euo pipefail
+          WORKSPACE=$(ls -d ios/*.xcworkspace | head -1)
+          SCHEME=$(xcodebuild -list -json -workspace "$WORKSPACE" | jq -r '.workspace.schemes[0]')
+          echo "workspace=$WORKSPACE" >> "$GITHUB_OUTPUT"
+          echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
+          echo "Building scheme '$SCHEME' from '$WORKSPACE'"
+
+      # Device SDK, not the simulator: ARKit is the whole point of the native
+      # module, and an iphonesimulator build would not exercise it the same way.
+      - name: Archive (unsigned)
+        run: |
+          set -euo pipefail
+          xcodebuild archive \
+            -workspace "${{ steps.xc.outputs.workspace }}" \
+            -scheme "${{ steps.xc.outputs.scheme }}" \
+            -configuration Release \
+            -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$RUNNER_TEMP/TyraXCam.xcarchive" \
+            -quiet \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS="" \
+            EXPANDED_CODE_SIGN_IDENTITY=""
+
+      # An .ipa is a zip with the .app inside a Payload/ directory. Doing it by
+      # hand (rather than -exportArchive) is what keeps this signing-free.
+      - name: Package an unsigned .ipa
+        run: |
+          set -euo pipefail
+          APP=$(ls -d "$RUNNER_TEMP/TyraXCam.xcarchive/Products/Applications/"*.app | head -1)
+          echo "packaging $APP"
+          mkdir -p "$RUNNER_TEMP/ipa/Payload"
+          cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"
+          cd "$RUNNER_TEMP/ipa"
+          zip -qry "$RUNNER_TEMP/TyraXCam-unsigned.ipa" Payload
+          ls -lh "$RUNNER_TEMP/TyraXCam-unsigned.ipa"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: TyraXCam-unsigned-ipa
+          path: ${{ runner.temp }}/TyraXCam-unsigned.ipa
+          if-no-files-found: error
+          retention-days: 30
