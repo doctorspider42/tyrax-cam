@@ -56,6 +56,31 @@ export default function App() {
   // placed. Choosing the viewpoint belongs where the operator is standing.
   const [pickCam, setPickCam] = React.useState(false);
 
+  // Frame coalescing. Every frame is a fresh base64 data URI, so <Image> decodes
+  // a NEW image each time; if frames arrive faster than they decode, the decodes
+  // pile up and the picture visibly hitches while running further behind. Keep at
+  // most ONE decode in flight and always jump to the newest frame when it
+  // finishes - for a viewfinder, the freshest picture beats every picture.
+  const pendingFrame = React.useRef(null);
+  const decoding = React.useRef(false);
+  const showFrame = React.useCallback((uri) => {
+    if (decoding.current) {
+      pendingFrame.current = uri;   // supersede whatever was waiting
+      return;
+    }
+    decoding.current = true;
+    setFrame(uri);
+  }, []);
+  const onFrameShown = React.useCallback(() => {
+    decoding.current = false;
+    const next = pendingFrame.current;
+    if (next) {
+      pendingFrame.current = null;
+      decoding.current = true;
+      setFrame(next);
+    }
+  }, []);
+
   // The link and the pose plumbing live in refs: a pose arrives up to 30 times a
   // second and must not re-render anything.
   const linkRef = React.useRef(null);
@@ -82,7 +107,7 @@ export default function App() {
         setState(s);
         setDetail(d || '');
       },
-      onFrame: (uri) => setFrame(uri),
+      onFrame: (uri) => showFrame(uri),
       onStatus: (s) => setStatus(s),
     });
     linkRef.current = l;
@@ -147,6 +172,8 @@ export default function App() {
       ARKit.stop();
       deactivateKeepAwake().catch(() => {});
       setFrame(null);
+      pendingFrame.current = null;
+      decoding.current = false;
       setMoveMode(false);
       setPickCam(false);
     }
@@ -180,7 +207,13 @@ export default function App() {
       <View style={styles.stage} {...pan.panHandlers}>
         <StatusBar hidden />
         {frame ? (
-          <Image source={{ uri: frame }} style={styles.view} resizeMode="contain" />
+          <Image
+            source={{ uri: frame }}
+            style={styles.view}
+            resizeMode="contain"
+            fadeDuration={0}
+            onLoadEnd={onFrameShown}
+          />
         ) : (
           <View style={styles.waiting}>
             <ActivityIndicator color="#7a8290" />

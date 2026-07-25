@@ -2,7 +2,7 @@
   "expo": {
     "name": "TyraX Cam",
     "slug": "tyrax-cam",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "icon": "./assets/icon.png",
     "//": "orientation is switched at RUNTIME (App.js): portrait to type an address, landscape once filming. The plist must therefore allow both, which 'default' does - a static 'landscape' here would veto the portrait lock.",
     "orientation": "default",
@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "io.github.doctorspider42.tyraxcam",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "supportsTablet": true,
       "requireFullScreen": true,
       "infoPlist": {
