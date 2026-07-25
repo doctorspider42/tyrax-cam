@@ -82,6 +82,10 @@ export class EditorLink {
 
   disconnect() {
     if (!this.ws) return;
+    // `closedByUs` silences the onclose handler so a deliberate leave does not
+    // report itself as an error - which meant NOTHING reported it at all, and
+    // the app sat on the viewfinder after Leave while the editor had already
+    // dropped us. Announce it here.
     this.closedByUs = true;
     try {
       this._send({ t: 'bye' });
@@ -91,6 +95,7 @@ export class EditorLink {
     }
     this.ws = null;
     this.ready = false;
+    this.handlers.onState?.('idle', '');
   }
 
   // { maxw, maxh, fps, quality } - the editor honours these over its own
@@ -102,6 +107,13 @@ export class EditorLink {
   // 'record' | 'stop' | 'recenter'
   command(cmd) {
     this._send({ t: 'cmd', cmd });
+  }
+
+  // Fly the start point. The delta is in the CAMERA's own frame - [right, up,
+  // forward] in scene units - because the phone has no idea how the scene is
+  // oriented; the editor resolves it against the live view basis.
+  moveStart(right, up, forward) {
+    this._send({ t: 'origin', d: [right, up, forward] });
   }
 
   // pose: { ts, px, py, pz, qx, qy, qz, qw, fov } - fov 0/omitted keeps the

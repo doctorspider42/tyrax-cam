@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   Image,
   KeyboardAvoidingView,
+  PanResponder,
   Platform,
   Pressable,
   ScrollView,
@@ -45,6 +46,10 @@ export default function App() {
   const [tracking, setTracking] = React.useState('');
   const [frame, setFrame] = React.useState(null);
   const [status, setStatus] = React.useState({});
+  // Move mode: dragging the viewfinder flies the shot's START POINT instead of
+  // doing nothing. Walking with the phone can only cover the room you are in, so
+  // this is how you reach the far side of a map without touching the editor.
+  const [moveMode, setMoveMode] = React.useState(false);
 
   // The link and the pose plumbing live in refs: a pose arrives up to 30 times a
   // second and must not re-render anything.
@@ -95,6 +100,30 @@ export default function App() {
 
   const connected = state === 'connected';
 
+  // Drag = strafe + forward/back, at a metre or so per screen-width of travel.
+  // Deltas are incremental (dx since the last event), so the editor integrates
+  // them and a dropped packet costs a little distance rather than desyncing.
+  const moveModeRef = React.useRef(moveMode);
+  moveModeRef.current = moveMode;
+  const lastDrag = React.useRef({ x: 0, y: 0 });
+  const pan = React.useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => moveModeRef.current,
+        onMoveShouldSetPanResponder: () => moveModeRef.current,
+        onPanResponderGrant: () => { lastDrag.current = { x: 0, y: 0 }; },
+        onPanResponderMove: (_e, g) => {
+          const k = 0.05;  // scene units per point of finger travel
+          const dx = (g.dx - lastDrag.current.x) * k;
+          const dy = (g.dy - lastDrag.current.y) * k;
+          lastDrag.current = { x: g.dx, y: g.dy };
+          // Drag right -> the camera slides right; drag up -> it moves forward.
+          linkRef.current?.moveStart(dx, 0, -dy);
+        },
+      }),
+    []
+  );
+
   React.useEffect(() => {
     if (connected) {
       ARKit.start(30);
@@ -103,6 +132,7 @@ export default function App() {
       ARKit.stop();
       deactivateKeepAwake().catch(() => {});
       setFrame(null);
+      setMoveMode(false);
     }
   }, [connected]);
 
@@ -131,7 +161,7 @@ export default function App() {
   // --- viewfinder ---------------------------------------------------------
   if (connected) {
     return (
-      <View style={styles.stage}>
+      <View style={styles.stage} {...pan.panHandlers}>
         <StatusBar hidden />
         {frame ? (
           <Image source={{ uri: frame }} style={styles.view} resizeMode="contain" />
@@ -163,8 +193,26 @@ export default function App() {
           ) : null}
         </View>
 
+        {moveMode ? (
+          <View style={styles.moveHint}>
+            <Text style={styles.moveHintText}>
+              Drag to place the start point{'\n'}
+              <Text style={styles.dim}>the phone's own motion stays relative to it</Text>
+            </Text>
+            <View style={styles.moveVert}>
+              <Btn label="Up" onPress={() => link.moveStart(0, 0.5, 0)} />
+              <Btn label="Down" onPress={() => link.moveStart(0, -0.5, 0)} />
+            </View>
+          </View>
+        ) : null}
+
         <View style={styles.controls}>
           <Btn label="Recentre" onPress={() => link.command('recenter')} />
+          <Btn
+            label={moveMode ? 'Moving' : 'Move'}
+            tone={moveMode ? 'on' : undefined}
+            onPress={() => setMoveMode((m) => !m)}
+          />
           {status.rec ? (
             <Btn label="Stop" tone="rec" onPress={() => link.command('stop')} />
           ) : (
@@ -302,7 +350,10 @@ function stateText(state, detail) {
 
 function Btn({ label, onPress, tone }) {
   return (
-    <Pressable onPress={onPress} style={[styles.btn, tone === 'rec' && styles.btnRec]}>
+    <Pressable
+      onPress={onPress}
+      style={[styles.btn, tone === 'rec' && styles.btnRec, tone === 'on' && styles.btnOn]}
+    >
       <Text style={styles.btnText}>{label}</Text>
     </Pressable>
   );
@@ -385,5 +436,9 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   btnRec: { backgroundColor: 'rgba(110,28,38,0.9)', borderColor: '#8a3542' },
+  btnOn: { backgroundColor: 'rgba(40,80,140,0.92)', borderColor: '#5580d0' },
+  moveHint: { position: 'absolute', left: 18, right: 18, top: '38%', alignItems: 'center', gap: 14 },
+  moveHintText: { color: '#e6e6e6', fontSize: 15, textAlign: 'center', fontWeight: '600' },
+  moveVert: { flexDirection: 'row', gap: 12, width: 220 },
   btnText: { color: '#f0f2f5', fontSize: 16, fontWeight: '700' },
 });

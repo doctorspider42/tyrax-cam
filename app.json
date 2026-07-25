@@ -2,13 +2,14 @@
   "expo": {
     "name": "TyraX Cam",
     "slug": "tyrax-cam",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "icon": "./assets/icon.png",
     "orientation": "landscape",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "ios": {
       "bundleIdentifier": "io.github.doctorspider42.tyraxcam",
+      "buildNumber": "3",
       "supportsTablet": true,
       "requireFullScreen": true,
       "infoPlist": {

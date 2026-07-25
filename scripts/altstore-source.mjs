@@ -50,6 +50,11 @@ const description = [
 // old and new installs alike.
 const versionEntry = {
   version,
+  // REQUIRED by AltStore, and the omission that made the first manifest
+  // undecodable ("The data couldn't be read because it isn't in the correct
+  // format"). Must be the built app's CFBundleVersion, which Expo takes from
+  // ios.buildNumber - read it rather than hardcode, or the two drift.
+  buildVersion: appJson.expo.ios.buildNumber ?? '1',
   date,
   downloadURL,
   size,
@@ -72,8 +77,7 @@ const source = {
       localizedDescription: description,
       iconURL: `https://raw.githubusercontent.com/${REPO}/main/assets/icon.png`,
       tintColor: '3B5C94',
-      category: 'developer',
-      screenshotURLs: [],
+      screenshots: [],
       // Legacy fields (older AltStore reads these directly).
       version,
       versionDate: date,
@@ -83,22 +87,62 @@ const source = {
       minOSVersion: '15.1',
       // Current schema.
       versions: [versionEntry],
-      permissions: [
-        {
-          type: 'camera',
-          usageDescription:
+      appPermissions: {
+        entitlements: [],
+        privacy: {
+          NSCameraUsageDescription:
             'ARKit needs the camera to work out how the phone moves. No image is recorded, shown or transmitted.',
+          NSLocalNetworkUsageDescription:
+            'To reach the TyraX editor running on your computer.',
         },
-        {
-          type: 'localnetwork',
-          usageDescription: 'To reach the TyraX editor running on your computer.',
-        },
-      ],
+      },
     },
   ],
   news: [],
 };
 
+// Check the required fields before writing. AltStore decodes a source with a
+// strict Swift decoder and reports any shortfall as the singularly unhelpful
+// "The data couldn't be read because it isn't in the correct format" - on the
+// phone, after an install attempt. A missing buildVersion shipped exactly that,
+// so the schema is asserted here instead of discovered there.
+// Field lists per https://faq.altstore.io/developers/make-a-source
+const problems = [];
+const req = (obj, keys, where) => {
+  for (const k of keys) {
+    const v = obj[k];
+    if (v === undefined || v === null || v === '') problems.push(`${where}: missing ${k}`);
+  }
+};
+req(source, ['apps'], 'source');
+for (const [i, app] of source.apps.entries()) {
+  req(app, ['name', 'bundleIdentifier', 'developerName', 'localizedDescription',
+            'iconURL', 'versions'], `apps[${i}]`);
+  if (!Array.isArray(app.versions) || app.versions.length === 0) {
+    problems.push(`apps[${i}]: versions must be a non-empty array`);
+  } else {
+    for (const [k, v] of app.versions.entries()) {
+      req(v, ['version', 'buildVersion', 'date', 'downloadURL', 'size'],
+          `apps[${i}].versions[${k}]`);
+      if (typeof v.size !== 'number') problems.push(`apps[${i}].versions[${k}]: size must be a number`);
+      // ISO 8601: date-only or a full timestamp, both accepted by AltStore.
+      if (!/^\d{4}-\d{1,2}-\d{1,2}([T ].*)?$/.test(String(v.date)))
+        problems.push(`apps[${i}].versions[${k}]: date "${v.date}" is not ISO 8601`);
+    }
+  }
+  if (app.appPermissions !== undefined) {
+    const ap = app.appPermissions;
+    if (!Array.isArray(ap.entitlements)) problems.push(`apps[${i}].appPermissions.entitlements must be an array`);
+    if (typeof ap.privacy !== 'object' || Array.isArray(ap.privacy))
+      problems.push(`apps[${i}].appPermissions.privacy must be an object of UsageDescription keys`);
+  }
+}
+if (problems.length) {
+  console.error('altstore.json would be invalid:\n  ' + problems.join('\n  '));
+  process.exit(1);
+}
+
 const out = new URL('../altstore.json', import.meta.url);
 writeFileSync(out, JSON.stringify(source, null, 2) + '\n');
-console.log(`altstore.json: ${bundleId} ${version} (${size} bytes) -> ${downloadURL}`);
+console.log(`altstore.json: ${bundleId} ${version} build ${versionEntry.buildVersion} ` +
+            `(${size} bytes) -> ${downloadURL}`);

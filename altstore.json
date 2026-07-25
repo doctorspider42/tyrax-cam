@@ -13,34 +13,31 @@
       "localizedDescription": "Turn your iPhone into a live camera viewfinder for the TyraX PlayStation 2 editor.\n\nConnect over Wi-Fi and the phone shows a live picture of the editor viewport;\nmove the phone and that camera moves with it (6DoF ARKit tracking, so walking\nacross the room walks the camera across the map). Press Record and the move is\nwritten into the editor cutscene timeline as camera keyframes.\n\nNeeds the TyraX editor running on a PC on the same network.",
       "iconURL": "https://raw.githubusercontent.com/doctorspider42/tyrax-cam/main/assets/icon.png",
       "tintColor": "3B5C94",
-      "category": "developer",
-      "screenshotURLs": [],
-      "version": "1.0.1",
+      "screenshots": [],
+      "version": "1.0.2",
       "versionDate": "2026-07-25",
-      "versionDescription": "Release 1.0.1. See the GitHub releases page for details.",
+      "versionDescription": "Release 1.0.2. See the GitHub releases page for details.",
       "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/latest/download/TyraXCam.ipa",
       "size": 3918944,
       "minOSVersion": "15.1",
       "versions": [
         {
-          "version": "1.0.1",
+          "version": "1.0.2",
+          "buildVersion": "3",
           "date": "2026-07-25",
           "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/latest/download/TyraXCam.ipa",
           "size": 3918944,
-          "localizedDescription": "Release 1.0.1. See the GitHub releases page for details.",
+          "localizedDescription": "Release 1.0.2. See the GitHub releases page for details.",
           "minOSVersion": "15.1"
         }
       ],
-      "permissions": [
-        {
-          "type": "camera",
-          "usageDescription": "ARKit needs the camera to work out how the phone moves. No image is recorded, shown or transmitted."
-        },
-        {
-          "type": "localnetwork",
-          "usageDescription": "To reach the TyraX editor running on your computer."
+      "appPermissions": {
+        "entitlements": [],
+        "privacy": {
+          "NSCameraUsageDescription": "ARKit needs the camera to work out how the phone moves. No image is recorded, shown or transmitted.",
+          "NSLocalNetworkUsageDescription": "To reach the TyraX editor running on your computer."
         }
-      ]
+      }
     }
   ],
   "news": []

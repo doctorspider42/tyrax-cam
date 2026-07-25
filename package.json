@@ -1,6 +1,6 @@
 {
   "name": "tyrax-cam",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "private": true,
   "description": "TyraX phone camera: live viewfinder + 6DoF ARKit camera control for the TyraX editor",
   "license": "Apache-2.0",

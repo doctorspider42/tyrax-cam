@@ -90,6 +90,21 @@ jobs:
       # Generates ios/ (never checked in) and runs pod install. This is also
       # what validates app.json and the local module's expo-module.config.json:
       # a bad key here fails now rather than in Xcode.
+      # A tag whose version does not match app.json ships an app that reports the
+      # wrong version to iOS, so AltStore compares the source against a stale
+      # number and offers the same "update" forever. v1.0.1 did exactly that.
+      - name: Tag must match app.json's version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          set -euo pipefail
+          WANT="${GITHUB_REF_NAME#v}"
+          HAVE=$(node -e 'console.log(require("./app.json").expo.version)')
+          echo "tag says $WANT, app.json says $HAVE"
+          if [ "$WANT" != "$HAVE" ]; then
+            echo "::error::tag $GITHUB_REF_NAME does not match app.json version $HAVE - bump app.json (and ios.buildNumber) before tagging"
+            exit 1
+          fi
+
       - name: Expo prebuild
         run: npx expo prebuild --platform ios
         env:
