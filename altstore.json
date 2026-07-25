@@ -15,19 +15,19 @@
       "tintColor": "3B5C94",
       "category": "developer",
       "screenshotURLs": [],
-      "version": "1.0.0",
+      "version": "1.0.1",
       "versionDate": "2026-07-25",
-      "versionDescription": "Release 1.0.0. See the GitHub releases page for details.",
+      "versionDescription": "Release 1.0.1. See the GitHub releases page for details.",
       "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/latest/download/TyraXCam.ipa",
-      "size": 3918971,
+      "size": 3918944,
       "minOSVersion": "15.1",
       "versions": [
         {
-          "version": "1.0.0",
+          "version": "1.0.1",
           "date": "2026-07-25",
           "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/latest/download/TyraXCam.ipa",
-          "size": 3918971,
-          "localizedDescription": "Release 1.0.0. See the GitHub releases page for details.",
+          "size": 3918944,
+          "localizedDescription": "Release 1.0.1. See the GitHub releases page for details.",
           "minOSVersion": "15.1"
         }
       ],
