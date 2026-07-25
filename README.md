@@ -72,10 +72,21 @@ Set up once on a PC, then every later version installs **from the phone**.
 4. AltServer tray icon → **Install AltStore** → your device. It asks for your
    Apple ID; with 2FA on, generate an
    [app-specific password](https://support.apple.com/en-us/HT204397) and use that.
+5. **Turn on Wi-Fi sync** — with the phone still plugged in: iTunes → the device
+   icon → *Summary* → tick **Sync with this iPhone over Wi-Fi** → *Apply*, and wait
+   for it to finish before unplugging.
+
+   Installing AltStore itself works over the cable, but installing an app *from*
+   AltStore does not: the phone asks AltServer to sign it, so AltServer has to
+   find the device over the network. Without Wi-Fi sync that lookup fails with
+   *"AltServer could not find this device"* — at the point where you tap Install,
+   long after the cable step appeared to succeed. (Leaving the phone plugged in
+   while you tap Install also works, and is the quickest way to tell this failure
+   apart from a network one.)
 
 **On the phone (once):**
 
-5. **Enable Developer Mode** — *Settings → Privacy & Security →* scroll to the
+6. **Enable Developer Mode** — *Settings → Privacy & Security →* scroll to the
    bottom *→ Developer Mode →* on. The phone asks to restart; after the reboot a
    prompt confirms it and asks for your passcode. **AltStore refuses to launch
    without this** (iOS 16+ requires it for anything signed with a development
@@ -88,22 +99,22 @@ Set up once on a PC, then every later version installs **from the phone**.
    cosmetic switch: it permits running code Apple did not sign. That is the price
    of sideloading by any route, AltStore or otherwise.
 
-6. Trust the certificate — *Settings → General → VPN & Device Management →
+7. Trust the certificate — *Settings → General → VPN & Device Management →
    Developer App →* your Apple ID *→ Trust*. Without it AltStore reports an
    untrusted developer.
 
-7. Open AltStore → **Settings** → sign in with the same Apple ID (app-specific
+8. Open AltStore → **Settings** → sign in with the same Apple ID (app-specific
    password again).
 
-8. **Browse** → **Sources** → **+** and add:
+9. **Browse** → **Sources** → **+** and add:
 
    ```
    https://raw.githubusercontent.com/doctorspider42/tyrax-cam/main/altstore.json
    ```
 
-9. *TyraX Cam* now appears under that source — tap **Install** (AltStore signs it
+10. *TyraX Cam* now appears under that source — tap **Install** (AltStore signs it
    with your Apple ID as it installs; the `.ipa` here is deliberately unsigned).
-10. First launch asks for **camera** (ARKit needs it to solve the motion; no image
+11. First launch asks for **camera** (ARKit needs it to solve the motion; no image
     is recorded or sent) and **local network** access — allow both.
 
 **From then on:** new releases show up in AltStore's *My Apps → Updates* on their
@@ -137,9 +148,10 @@ open ios/*.xcworkspace
 
 In Xcode: select the app target → *Signing & Capabilities* → tick *Automatically
 manage signing* → **Team**: your Apple ID (add it under *Xcode > Settings >
-Accounts*) → change the **Bundle Identifier** to something unique to you (the
-`com.example.tyraxcam` placeholder in `app.json` will collide). Plug the phone
-in, pick it as the destination, **Run**.
+Accounts*) → change the **Bundle Identifier** in `app.json` to something unique to
+you if you are not the repo owner (it ships as `io.github.doctorspider42.tyraxcam`;
+two people cannot register the same explicit App ID). Plug the phone in, pick it as
+the destination, **Run**.
 
 First launch needs *Settings > General > VPN & Device Management > Developer App
 > Trust*. Same 7-day expiry on a free account; re-run from Xcode to renew.
@@ -217,6 +229,16 @@ screen. Use a native build (any route above).
 | "limited: moving too fast" | ARKit lost the solve. Slow down, and film somewhere with visible detail — a blank white wall gives it nothing to track. |
 | Stream stutters | Drop to the *Low* preset, or lower the fps in the editor's Phone Camera window. |
 | Nothing at all, and you want to know which end is broken | Open `http://<editor-host>:7798` in a desktop browser. The editor serves a test client there; if that works, the editor end is fine. |
+
+### Installing, not running
+
+| Symptom | Cause |
+|---|---|
+| AltStore will not launch: "Developer Mode required" | Step 6 — *Settings → Privacy & Security → Developer Mode*, then reboot. |
+| "AltServer could not find this device" when you tap Install | Wi-Fi sync is off (step 5), **or** the phone and the PC are not on the same network — a guest SSID, a separate VLAN, or a router with client/AP isolation all break the lookup. Quickest test: plug the phone in and tap Install again; if that works, it is Wi-Fi sync or the network, not signing. |
+| "Untrusted developer" | Step 7 — trust the certificate in *VPN & Device Management*. |
+| Install fails complaining about the bundle identifier | Someone else already registered that explicit App ID with Apple. Change `ios.bundleIdentifier` in `app.json` and rebuild. |
+| It worked, then stopped a week later | The free-account signature expired. Open AltStore with AltServer running, or re-run Sideloadly. |
 
 ## Development
 
