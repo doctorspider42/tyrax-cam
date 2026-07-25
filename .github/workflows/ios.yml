@@ -187,3 +187,16 @@ jobs:
             --notes "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from ${GITHUB_SHA:0:7}." \
             --verify-tag || \
           gh release upload "$GITHUB_REF_NAME" "$RUNNER_TEMP/TyraXCam.ipa" --clobber
+
+  # Point the AltStore source at the release we just published. Called here rather
+  # than triggered by the release event, because GitHub will not start a workflow
+  # from an event its own token raised.
+  altstore:
+    name: AltStore source
+    needs: ios
+    if: startsWith(github.ref, 'refs/tags/')
+    permissions:
+      contents: write
+    uses: ./.github/workflows/altstore-source.yml
+    with:
+      tag: ${{ github.ref_name }}

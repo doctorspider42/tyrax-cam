@@ -6,14 +6,24 @@ name: AltStore source
 # Separate from ios.yml on purpose: this is a 20-second Linux job reacting to a
 # release, not part of building one.
 
+# NOT triggered by `release: published`. GitHub deliberately refuses to start a
+# workflow from an event raised by GITHUB_TOKEN (its loop guard), and our releases
+# are created by ios.yml using exactly that token - so a release trigger here
+# would simply never fire. ios.yml calls this instead, and workflow_dispatch stays
+# available for repairing a manifest by hand.
 on:
-  release:
-    types: [published, edited]
+  workflow_call:
+    inputs:
+      tag:
+        description: 'Release tag to point the manifest at'
+        required: true
+        type: string
   workflow_dispatch:
     inputs:
       tag:
         description: 'Release tag to point the manifest at (default: the latest)'
         required: false
+        type: string
 
 permissions:
   contents: write
@@ -33,7 +43,7 @@ jobs:
         id: rel
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+          TAG: ${{ inputs.tag }}
         run: |
           set -euo pipefail
           if [ -z "${TAG:-}" ]; then
