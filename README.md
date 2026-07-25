@@ -11,9 +11,8 @@ editor's cutscene timeline as camera keyframes.
 TyraX is an editor for the [Tyra](https://github.com/h4570/tyra) PlayStation 2
 engine, so the end result is a hand-held camera move playing back on a PS2.
 
-> **This app has not been built on a device yet.** CI compiles it (see the badge)
-> and the protocol is proven against the editor, but nobody has yet run it on a
-> phone. Expect to fix small things, and please update this note when you do.
+Runs on a device, confirmed. The app is **landscape-only** — you hold it like a
+camera, and its tilt is part of the shot (see *Roll* below).
 
 ## What it does
 
