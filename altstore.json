@@ -23,6 +23,7 @@
       "versions": [
         {
           "version": "1.0.4",
+          "buildVersion": "5",
           "date": "2026-07-25T23:12:54Z",
           "localizedDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from e6c0c74.",
           "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/download/v1.0.4/TyraXCam.ipa",
@@ -31,6 +32,7 @@
         },
         {
           "version": "1.0.3",
+          "buildVersion": "4",
           "date": "2026-07-25T21:37:58Z",
           "localizedDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from c97ce7d.",
           "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/download/v1.0.3/TyraXCam.ipa",
@@ -39,6 +41,7 @@
         },
         {
           "version": "1.0.2",
+          "buildVersion": "3",
           "date": "2026-07-25T21:09:17Z",
           "localizedDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from 15c7184.",
           "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/download/v1.0.2/TyraXCam.ipa",
@@ -46,15 +49,8 @@
           "minOSVersion": "15.1"
         },
         {
-          "version": "1.0.1",
-          "date": "2026-07-25T18:18:54Z",
-          "localizedDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from 94057e6.",
-          "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/download/v1.0.1/TyraXCam.ipa",
-          "size": 3918944,
-          "minOSVersion": "15.1"
-        },
-        {
           "version": "1.0.0",
+          "buildVersion": "1",
           "date": "2026-07-25T13:49:46Z",
           "localizedDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from 7edbc2c.",
           "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/download/v1.0.0/TyraXCam.ipa",

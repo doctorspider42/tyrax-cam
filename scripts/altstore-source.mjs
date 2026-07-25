@@ -17,10 +17,21 @@
 // release the installed one was no longer in it. AltStore's own official source
 // (apps.altstore.io) carries its full history, newest first - match that.
 //
-// Two more things copied from that reference rather than from the docs, which
-// disagree with it: dates are full ISO 8601 timestamps (not date-only), and there
-// is no `buildVersion` field - the docs list it as required, the shipping source
-// does not have one, so it cannot be.
+// Dates are full ISO 8601 timestamps, copied from that reference rather than from
+// the docs, which allow date-only.
+//
+// `buildVersion` IS emitted, despite the official source not having one. Removing
+// it broke installing while leaving the source displayable - AltStore showed the
+// app and its version, then failed the install with the same "isn't in the correct
+// format", because the install path decodes the chosen version entry in full. The
+// documentation calls it required and that behaviour agrees.
+//
+// Both `version` and `buildVersion` are read from app.json AT THAT TAG rather than
+// from the tag name, so the manifest describes what is actually inside each .ipa.
+// A release whose two disagree is skipped: v1.0.1 shipped with app.json still
+// saying 1.0.0, so advertising it as 1.0.1 would promise a build that reports
+// something else.
+import { execFileSync } from 'node:child_process';
 import { readFileSync, writeFileSync } from 'node:fs';
 
 const [releasesPath] = process.argv.slice(2);
@@ -43,14 +54,43 @@ if (!Array.isArray(releases)) {
 // One entry per release that actually carries the .ipa, newest first. Each points
 // at ITS OWN asset, not at /releases/latest/ - an older entry aimed at "latest"
 // would hand out the wrong build.
+// What the app built at a tag actually reports to iOS. Read from the committed
+// app.json, which is what Expo turns into CFBundleShortVersionString /
+// CFBundleVersion - guessing either would let the manifest promise a build that
+// identifies itself differently, which AltStore is entitled to reject.
+const appAtTag = (tag) => {
+  try {
+    const raw = execFileSync('git', ['show', `${tag}:app.json`], {
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    });
+    const e = JSON.parse(raw).expo;
+    return { version: e.version, build: String(e.ios?.buildNumber ?? '1') };
+  } catch {
+    return null;   // tag not fetched (shallow clone) or app.json absent
+  }
+};
+
 const versions = [];
+const skipped = [];
 for (const r of releases) {
   if (r.draft) continue;
   const asset = (r.assets || []).find((a) => a.name === IPA);
   if (!asset) continue;                       // a release with no build yet
   const tag = r.tag_name;
+  const tagVersion = tag.replace(/^v/, '');
+  const app = appAtTag(tag);
+  if (!app) {
+    skipped.push(`${tag}: cannot read app.json at that tag (shallow clone?)`);
+    continue;
+  }
+  if (app.version !== tagVersion) {
+    skipped.push(`${tag}: the build reports ${app.version}, not ${tagVersion}`);
+    continue;
+  }
   versions.push({
-    version: tag.replace(/^v/, ''),
+    version: app.version,
+    buildVersion: app.build,
     date: r.published_at || r.created_at,     // full ISO 8601 with timezone
     localizedDescription:
       (r.body || `Release ${tag}.`).trim().slice(0, 1000),
@@ -59,6 +99,7 @@ for (const r of releases) {
     minOSVersion: '15.1',
   });
 }
+for (const s of skipped) console.log(`skipped ${s}`);
 if (versions.length === 0) {
   console.error(`no release carries a ${IPA} asset yet - nothing to advertise`);
   process.exit(1);
@@ -140,7 +181,10 @@ for (const [i, app] of source.apps.entries()) {
   }
   for (const [k, v] of (app.versions || []).entries()) {
     const at = `apps[${i}].versions[${k}]`;
-    req(v, ['version', 'date', 'downloadURL', 'size'], at);
+    // buildVersion is back in the required set: without it the source still
+    // DISPLAYS but installing fails, which is a far worse failure than a
+    // manifest that will not load at all.
+    req(v, ['version', 'buildVersion', 'date', 'downloadURL', 'size'], at);
     if (typeof v.size !== 'number' || v.size <= 0) problems.push(`${at}: size must be a positive number`);
     if (isNaN(new Date(v.date))) problems.push(`${at}: date "${v.date}" is unparseable`);
     if (!String(v.downloadURL).includes(`/${IPA}`)) problems.push(`${at}: downloadURL does not point at ${IPA}`);
