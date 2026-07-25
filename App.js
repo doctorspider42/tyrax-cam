@@ -6,6 +6,7 @@
 // closed on screen: turn the phone, the picture turns.
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { activateKeepAwakeAsync, deactivateKeepAwake } from 'expo-keep-awake';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import {
@@ -50,6 +51,10 @@ export default function App() {
   // doing nothing. Walking with the phone can only cover the room you are in, so
   // this is how you reach the far side of a map without touching the editor.
   const [moveMode, setMoveMode] = React.useState(false);
+  // Which camera to shoot from: the editor sends the scene's Camera entities in
+  // its status, and picking one here jumps the view to where that camera was
+  // placed. Choosing the viewpoint belongs where the operator is standing.
+  const [pickCam, setPickCam] = React.useState(false);
 
   // The link and the pose plumbing live in refs: a pose arrives up to 30 times a
   // second and must not re-render anything.
@@ -124,6 +129,16 @@ export default function App() {
     []
   );
 
+  // Portrait to type an address with a keyboard up, landscape the moment you are
+  // filming - you hold it like a camera then. app.json must allow both
+  // ('orientation': 'default') or these locks have nothing to choose from.
+  React.useEffect(() => {
+    const lock = connected
+      ? ScreenOrientation.OrientationLock.LANDSCAPE
+      : ScreenOrientation.OrientationLock.PORTRAIT_UP;
+    ScreenOrientation.lockAsync(lock).catch(() => {});
+  }, [connected]);
+
   React.useEffect(() => {
     if (connected) {
       ARKit.start(30);
@@ -133,6 +148,7 @@ export default function App() {
       deactivateKeepAwake().catch(() => {});
       setFrame(null);
       setMoveMode(false);
+      setPickCam(false);
     }
   }, [connected]);
 
@@ -206,7 +222,41 @@ export default function App() {
           </View>
         ) : null}
 
+        {pickCam ? (
+          <View style={styles.camSheet}>
+            <Text style={styles.camTitle}>Shoot from</Text>
+            <Pressable
+              onPress={() => { link.selectCamera(''); setPickCam(false); }}
+              style={[styles.camRow, !status.target && styles.camRowOn]}
+            >
+              <Text style={styles.camRowText}>Free shots</Text>
+              <Text style={styles.dim}>from the editor's own view</Text>
+            </Pressable>
+            {(status.cams || []).map((c) => (
+              <Pressable
+                key={c}
+                onPress={() => { link.selectCamera(c); setPickCam(false); }}
+                style={[styles.camRow, status.target === c && styles.camRowOn]}
+              >
+                <Text style={styles.camRowText}>{c}</Text>
+              </Pressable>
+            ))}
+            {(status.cams || []).length === 0 ? (
+              <Text style={styles.dim}>
+                No Camera objects in this scene yet - add one in the editor
+                (+ Add object &gt; Gameplay &gt; Camera).
+              </Text>
+            ) : null}
+            <Btn label="Close" onPress={() => setPickCam(false)} />
+          </View>
+        ) : null}
+
         <View style={styles.controls}>
+          <Btn
+            label={status.target ? status.target : 'Camera'}
+            tone={pickCam ? 'on' : undefined}
+            onPress={() => setPickCam((v) => !v)}
+          />
           <Btn label="Recentre" onPress={() => link.command('recenter')} />
           <Btn
             label={moveMode ? 'Moving' : 'Move'}
@@ -440,5 +490,17 @@ const styles = StyleSheet.create({
   moveHint: { position: 'absolute', left: 18, right: 18, top: '38%', alignItems: 'center', gap: 14 },
   moveHintText: { color: '#e6e6e6', fontSize: 15, textAlign: 'center', fontWeight: '600' },
   moveVert: { flexDirection: 'row', gap: 12, width: 220 },
+  camSheet: {
+    position: 'absolute', left: 18, right: 18, top: 60, bottom: 100,
+    backgroundColor: 'rgba(20,22,26,0.94)', borderRadius: 12, padding: 16, gap: 8,
+    borderColor: '#333a45', borderWidth: 1,
+  },
+  camTitle: { color: '#f0f2f5', fontSize: 17, fontWeight: '700', marginBottom: 4 },
+  camRow: {
+    paddingVertical: 11, paddingHorizontal: 12, borderRadius: 8,
+    backgroundColor: '#0e1013', borderColor: '#333a45', borderWidth: 1,
+  },
+  camRowOn: { borderColor: '#5580d0', backgroundColor: '#1d2a40' },
+  camRowText: { color: '#e6e6e6', fontSize: 16, fontWeight: '600' },
   btnText: { color: '#f0f2f5', fontSize: 16, fontWeight: '700' },
 });

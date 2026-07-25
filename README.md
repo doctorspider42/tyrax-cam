@@ -11,8 +11,9 @@ editor's cutscene timeline as camera keyframes.
 TyraX is an editor for the [Tyra](https://github.com/h4570/tyra) PlayStation 2
 engine, so the end result is a hand-held camera move playing back on a PS2.
 
-Runs on a device, confirmed. The app is **landscape-only** — you hold it like a
-camera, and its tilt is part of the shot (see *Roll* below).
+Runs on a device, confirmed. It opens **portrait** to type an address, then flips
+to **landscape** the moment it connects — you hold it like a camera from there,
+and its tilt is part of the shot.
 
 ## What it does
 
@@ -21,8 +22,16 @@ camera, and its tilt is part of the shot (see *Roll* below).
   rotation, not just orientation.
 - Shows the editor's live viewport image as a JPEG stream, at a quality you pick
   (Low / Medium / High).
+- **Picks which camera to shoot from**: the editor sends the scene's Camera
+  objects, and choosing one starts the view from where that camera was *placed* —
+  position, aim and tilt. **Recentre** returns to exactly that pose, and the
+  recording goes into the same camera's track. One choice, because "the view from
+  cam-1" and "the recording into cam-1" are the same intent.
 - **Record / Stop / Recentre** on screen, so you never reach for the keyboard
   while holding the camera.
+- **Move** mode for the case where no camera is placed where you want it: drag
+  the viewfinder to fly the shot's start point across the map (Up/Down for
+  height). It only *offsets* from the selected camera — Recentre undoes it.
 - Keeps the screen awake while connected, and warns when ARKit tracking degrades
   ("moving too fast", "not enough detail to track").
 

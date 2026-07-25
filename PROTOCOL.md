@@ -68,6 +68,8 @@ After a `deny` the editor closes the socket. Report the reason before your
 |---|---|
 | `pose` | `ts` — seconds, **the client's own monotonic clock** (any epoch); `p` — `[x, y, z]` metres; `q` — `[x, y, z, w]` rotation; `fov` — optional vertical field of view in degrees (omit or 0 to keep the editor's own) |
 | `cmd` | `cmd`: `"record"` \| `"stop"` \| `"recenter"` — asks the editor to start/stop recording, or to re-anchor the mapping. The editor decides what they mean; the client only asks. |
+| `startcam` | `name` — which Camera entity to view from and record into (`""` = free shots from the editor's own viewpoint). The editor jumps the view to that camera's **placed** pose, and Recentre then returns there. |
+| `origin` | `d` `[right, up, forward]` — slide the shot's start point by this delta, in the **camera's own** frame, scene units (the phone cannot know how the scene is oriented, so the editor resolves it against the live view basis) |
 | `cfg` | `maxw`, `maxh` — long-edge cap of the streamed image; `fps`; `quality` — JPEG 1..100. These override the editor's own defaults, because only the device knows its screen and its Wi-Fi. |
 | `bye` | — (a clean goodbye; closing the socket also works) |
 
@@ -81,7 +83,7 @@ density it was asked for.
 | Type | Payload |
 |---|---|
 | `frame` | `w`, `h`, `seq` + a **JPEG image in the binary trailer** |
-| `status` | `rec` (bool), `time` (seconds), `keys` (count), `seq` (sequence name), `target` (camera entity name, `""` = free shots), `dens` (keys per second), `driving` (is the pose actually moving the editor camera) — sent **only when something changes**, so do not drive a frame-rate readout off it |
+| `status` | `rec` (bool), `time` (seconds), `keys` (count), `seq` (sequence name), `target` (the selected camera, `""` = free shots), `cams` (every Camera entity in the active scene, so the phone can offer the choice itself), `dens` (keys per second), `driving` (is the pose actually moving the editor camera) — sent **only when something changes**, so do not drive a frame-rate readout off it |
 | `bye` | `reason` |
 
 ## Pose space

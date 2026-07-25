@@ -109,6 +109,13 @@ export class EditorLink {
     this._send({ t: 'cmd', cmd });
   }
 
+  // Pick which Camera entity to view from and record into ('' = free shots from
+  // the editor's own viewpoint). The editor jumps the view to that camera's
+  // placed pose, and Recentre then returns there.
+  selectCamera(name) {
+    this._send({ t: 'startcam', name: name || '' });
+  }
+
   // Fly the start point. The delta is in the CAMERA's own frame - [right, up,
   // forward] in scene units - because the phone has no idea how the scene is
   // oriented; the editor resolves it against the live view basis.
