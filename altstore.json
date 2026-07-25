@@ -10,24 +10,47 @@
       "bundleIdentifier": "io.github.doctorspider42.tyraxcam",
       "developerName": "doctorspider42",
       "subtitle": "Live viewfinder + 6DoF camera control",
-      "localizedDescription": "Turn your iPhone into a live camera viewfinder for the TyraX PlayStation 2 editor.\n\nConnect over Wi-Fi and the phone shows a live picture of the editor viewport;\nmove the phone and that camera moves with it (6DoF ARKit tracking, so walking\nacross the room walks the camera across the map). Press Record and the move is\nwritten into the editor cutscene timeline as camera keyframes.\n\nNeeds the TyraX editor running on a PC on the same network.",
+      "localizedDescription": "Turn your iPhone into a live camera viewfinder for the TyraX PlayStation 2 editor.\n\nConnect over Wi-Fi and the phone shows a live picture of the editor viewport;\nmove the phone and that camera moves with it (6DoF ARKit tracking, so walking\nacross the room walks the camera across the map). Pick which Camera object to\nshoot from, and press Record to write the move into the editor cutscene\ntimeline as camera keyframes.\n\nNeeds the TyraX editor running on a PC on the same network.",
       "iconURL": "https://raw.githubusercontent.com/doctorspider42/tyrax-cam/main/assets/icon.png",
       "tintColor": "3B5C94",
       "screenshots": [],
       "version": "1.0.3",
-      "versionDate": "2026-07-25",
-      "versionDescription": "Release 1.0.3. See the GitHub releases page for details.",
+      "versionDate": "2026-07-25T21:37:58Z",
+      "versionDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from c97ce7d.",
       "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/latest/download/TyraXCam.ipa",
       "size": 3949166,
       "minOSVersion": "15.1",
       "versions": [
         {
           "version": "1.0.3",
-          "buildVersion": "4",
-          "date": "2026-07-25",
-          "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/latest/download/TyraXCam.ipa",
+          "date": "2026-07-25T21:37:58Z",
+          "localizedDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from c97ce7d.",
+          "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/download/v1.0.3/TyraXCam.ipa",
           "size": 3949166,
-          "localizedDescription": "Release 1.0.3. See the GitHub releases page for details.",
+          "minOSVersion": "15.1"
+        },
+        {
+          "version": "1.0.2",
+          "date": "2026-07-25T21:09:17Z",
+          "localizedDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from 15c7184.",
+          "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/download/v1.0.2/TyraXCam.ipa",
+          "size": 3920287,
+          "minOSVersion": "15.1"
+        },
+        {
+          "version": "1.0.1",
+          "date": "2026-07-25T18:18:54Z",
+          "localizedDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from 94057e6.",
+          "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/download/v1.0.1/TyraXCam.ipa",
+          "size": 3918944,
+          "minOSVersion": "15.1"
+        },
+        {
+          "version": "1.0.0",
+          "date": "2026-07-25T13:49:46Z",
+          "localizedDescription": "Unsigned build - sign it with AltStore or Sideloadly using your own Apple ID (see the README). Built from 7edbc2c.",
+          "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/download/v1.0.0/TyraXCam.ipa",
+          "size": 3918971,
           "minOSVersion": "15.1"
         }
       ],

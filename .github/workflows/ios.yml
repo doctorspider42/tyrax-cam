@@ -213,5 +213,3 @@ jobs:
     permissions:
       contents: write
     uses: ./.github/workflows/altstore-source.yml
-    with:
-      tag: ${{ github.ref_name }}

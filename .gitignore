@@ -7,3 +7,6 @@ node_modules/
 /dist/
 *.ipa
 *.log
+
+# Temp payload the AltStore source job pipes the releases API into.
+/releases.json
