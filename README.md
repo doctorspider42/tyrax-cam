@@ -72,19 +72,39 @@ Set up once on a PC, then every later version installs **from the phone**.
 4. AltServer tray icon → **Install AltStore** → your device. It asks for your
    Apple ID; with 2FA on, generate an
    [app-specific password](https://support.apple.com/en-us/HT204397) and use that.
-5. On the phone: *Settings → General → VPN & Device Management → Developer App →
-   Trust*.
 
 **On the phone (once):**
 
-6. Open AltStore → **Browse** → **Sources** → **+** and add:
+5. **Enable Developer Mode** — *Settings → Privacy & Security →* scroll to the
+   bottom *→ Developer Mode →* on. The phone asks to restart; after the reboot a
+   prompt confirms it and asks for your passcode. **AltStore refuses to launch
+   without this** (iOS 16+ requires it for anything signed with a development
+   certificate, which every sideloaded app is).
+
+   If the row is missing, it only appears once the device has been offered a
+   developer-signed app — plug in and re-run *Install AltStore*, then look again.
+
+   Be aware this is a real reduction in the device's security posture, not a
+   cosmetic switch: it permits running code Apple did not sign. That is the price
+   of sideloading by any route, AltStore or otherwise.
+
+6. Trust the certificate — *Settings → General → VPN & Device Management →
+   Developer App →* your Apple ID *→ Trust*. Without it AltStore reports an
+   untrusted developer.
+
+7. Open AltStore → **Settings** → sign in with the same Apple ID (app-specific
+   password again).
+
+8. **Browse** → **Sources** → **+** and add:
 
    ```
    https://raw.githubusercontent.com/doctorspider42/tyrax-cam/main/altstore.json
    ```
 
-7. *TyraX Cam* now appears under that source — tap **Install** (AltStore signs it
+9. *TyraX Cam* now appears under that source — tap **Install** (AltStore signs it
    with your Apple ID as it installs; the `.ipa` here is deliberately unsigned).
+10. First launch asks for **camera** (ARKit needs it to solve the motion; no image
+    is recorded or sent) and **local network** access — allow both.
 
 **From then on:** new releases show up in AltStore's *My Apps → Updates* on their
 own. AltServer must be running on the PC and on the same Wi-Fi for AltStore to
