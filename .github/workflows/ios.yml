@@ -84,14 +84,25 @@ jobs:
         env:
           EXPO_NO_TELEMETRY: '1'
 
-      # The scheme name comes from app.json, so discover it instead of hardcoding
-      # it - renaming the app must not silently break CI.
+      # The names come from app.json via prebuild, so derive them instead of
+      # hardcoding: renaming the app must not silently break CI.
+      #
+      # The app's scheme is named after the generated .xcodeproj. Do NOT just take
+      # the workspace's first scheme - CocoaPods adds one per pod and "boost"
+      # sorts ahead of the app, so archiving it "succeeds" while producing an
+      # archive with no .app inside. (Yes, that is how this was found.)
       - name: Find the Xcode workspace and scheme
         id: xc
         run: |
           set -euo pipefail
           WORKSPACE=$(ls -d ios/*.xcworkspace | head -1)
-          SCHEME=$(xcodebuild -list -json -workspace "$WORKSPACE" | jq -r '.workspace.schemes[0]')
+          SCHEME=$(basename "$(ls -d ios/*.xcodeproj | head -1)" .xcodeproj)
+          if ! xcodebuild -list -json -workspace "$WORKSPACE" \
+               | jq -e --arg s "$SCHEME" '.workspace.schemes | index($s)' > /dev/null; then
+            echo "::error::scheme '$SCHEME' is not in $WORKSPACE"
+            xcodebuild -list -workspace "$WORKSPACE"
+            exit 1
+          fi
           echo "workspace=$WORKSPACE" >> "$GITHUB_OUTPUT"
           echo "scheme=$SCHEME" >> "$GITHUB_OUTPUT"
           echo "Building scheme '$SCHEME' from '$WORKSPACE'"
@@ -107,7 +118,7 @@ jobs:
             -configuration Release \
             -sdk iphoneos \
             -destination 'generic/platform=iOS' \
-            -archivePath "$RUNNER_TEMP/TyraXCam.xcarchive" \
+            -archivePath "$RUNNER_TEMP/${{ steps.xc.outputs.scheme }}.xcarchive" \
             -quiet \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
@@ -118,19 +129,31 @@ jobs:
       # An .ipa is a zip with the .app inside a Payload/ directory. Doing it by
       # hand (rather than -exportArchive) is what keeps this signing-free.
       - name: Package an unsigned .ipa
+        env:
+          SCHEME: ${{ steps.xc.outputs.scheme }}
         run: |
           set -euo pipefail
-          APP=$(ls -d "$RUNNER_TEMP/TyraXCam.xcarchive/Products/Applications/"*.app | head -1)
+          ARCHIVE="$RUNNER_TEMP/$SCHEME.xcarchive"
+          APPS="$ARCHIVE/Products/Applications"
+          # An archive without an app means the wrong scheme was built - say so
+          # rather than letting a glob failure explain it.
+          if [ ! -d "$APPS" ] || [ -z "$(ls -A "$APPS" 2>/dev/null)" ]; then
+            echo "::error::no application in $ARCHIVE - was scheme '$SCHEME' really the app?"
+            find "$ARCHIVE" -maxdepth 3 -print
+            exit 1
+          fi
+          APP=$(ls -d "$APPS/"*.app | head -1)
           echo "packaging $APP"
           mkdir -p "$RUNNER_TEMP/ipa/Payload"
           cp -R "$APP" "$RUNNER_TEMP/ipa/Payload/"
           cd "$RUNNER_TEMP/ipa"
-          zip -qry "$RUNNER_TEMP/TyraXCam-unsigned.ipa" Payload
-          ls -lh "$RUNNER_TEMP/TyraXCam-unsigned.ipa"
+          zip -qry "$RUNNER_TEMP/$SCHEME-unsigned.ipa" Payload
+          ls -lh "$RUNNER_TEMP/$SCHEME-unsigned.ipa"
+          echo "ipa=$RUNNER_TEMP/$SCHEME-unsigned.ipa" >> "$GITHUB_ENV"
 
       - uses: actions/upload-artifact@v4
         with:
           name: TyraXCam-unsigned-ipa
-          path: ${{ runner.temp }}/TyraXCam-unsigned.ipa
+          path: ${{ env.ipa }}
           if-no-files-found: error
           retention-days: 30
