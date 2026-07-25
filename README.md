@@ -52,7 +52,11 @@ a different client (or a different server) without reading this app's source.
 The app is **sideload-only** — it is a tool for one workflow, not something for
 the App Store. Three routes, in rising order of effort:
 
-### 1. AltStore, with this repo as a source (recommended — no Mac needed)
+### 1. AltStore **Classic**, with this repo as a source (recommended — no Mac needed)
+
+> Classic, **not AltStore PAL** — the two take different source formats and this
+> repo publishes the Classic one. See
+> [What about AltStore PAL?](#what-about-altstore-pal) below.
 
 Set up once on a PC, then every later version installs **from the phone**.
 
@@ -136,6 +140,31 @@ npx eas-cli build -p ios --profile device
 
 Register the phone's UDID when prompted; the resulting `.ipa` installs straight
 from the EAS link.
+
+### What about AltStore PAL?
+
+PAL is Apple's DMA-era alternative **marketplace** (EU, Japan, Brazil; iOS 17.4+),
+and it is a much nicer experience for the person installing: no AltServer, no PC,
+no Apple ID prompt, **no 3-app limit and no 7-day expiry**. It is also free for
+users since an Epic Games grant covered Apple's Core Technology Fee.
+
+It is nevertheless the wrong tool for this app, because PAL is a channel for
+shipping to *other people*, and the cost lands on the publisher:
+
+- a **paid Apple Developer Program** membership (~€99/yr);
+- signing Apple's **Alternative Terms Addendum for Apps in the EU**;
+- **Apple notarization of every build**, submitted through App Store Connect;
+- hosting an **ADP** (Alternative Distribution Package) — a directory tree with
+  unchanged file hashes — instead of a plain `.ipa`, with the source pointing at
+  its `manifest.json`.
+
+That is why the source published here is the **Classic** format: it points at an
+`.ipa`, which PAL does not consume. Adding this URL to PAL will not work.
+
+Worth revisiting only if this app is ever handed to other TyraX users — at which
+point the €99/yr and the notarization step buy a genuinely frictionless install.
+For putting your own tool on your own phone, Classic or Sideloadly costs nothing
+and the 7-day refresh is automatic.
 
 ### Expo Go does not work
 

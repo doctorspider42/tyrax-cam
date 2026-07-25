@@ -1,4 +1,9 @@
-// Regenerates altstore.json - the AltStore "source" manifest.
+// Regenerates altstore.json - the AltStore **Classic** "source" manifest.
+//
+// Classic, not PAL: a PAL source points at an Alternative Distribution Package's
+// manifest.json, which requires a paid Apple Developer account, Apple
+// notarization of every build and the EU Alternative Terms Addendum. This one
+// points at a plain .ipa, which PAL does not consume - see the README.
 //
 // Adding this source's URL in AltStore once makes the app show up in its Browse
 // tab, so every later release installs and updates FROM THE PHONE. Without it,
