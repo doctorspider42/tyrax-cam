@@ -14,20 +14,20 @@
       "iconURL": "https://raw.githubusercontent.com/doctorspider42/tyrax-cam/main/assets/icon.png",
       "tintColor": "3B5C94",
       "screenshots": [],
-      "version": "1.0.2",
+      "version": "1.0.3",
       "versionDate": "2026-07-25",
-      "versionDescription": "Release 1.0.2. See the GitHub releases page for details.",
+      "versionDescription": "Release 1.0.3. See the GitHub releases page for details.",
       "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/latest/download/TyraXCam.ipa",
-      "size": 3920287,
+      "size": 3949166,
       "minOSVersion": "15.1",
       "versions": [
         {
-          "version": "1.0.2",
-          "buildVersion": "3",
+          "version": "1.0.3",
+          "buildVersion": "4",
           "date": "2026-07-25",
           "downloadURL": "https://github.com/doctorspider42/tyrax-cam/releases/latest/download/TyraXCam.ipa",
-          "size": 3920287,
-          "localizedDescription": "Release 1.0.2. See the GitHub releases page for details.",
+          "size": 3949166,
+          "localizedDescription": "Release 1.0.3. See the GitHub releases page for details.",
           "minOSVersion": "15.1"
         }
       ],
